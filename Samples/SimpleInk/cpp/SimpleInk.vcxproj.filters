@@ -20,6 +20,11 @@
     <ClCompile Include="Scenario1.xaml.cpp" />
     <ClCompile Include="Scenario2.xaml.cpp" />
     <ClCompile Include="Scenario3.xaml.cpp" />
+    <ClCompile Include="Scenario4.xaml.cpp" />
+    <ClCompile Include="Scenario5.xaml.cpp" />
+    <ClCompile Include="Scenario6.xaml.cpp" />
+    <ClCompile Include="Scenario7.xaml.cpp" />
+    <ClCompile Include="Scenario8.xaml.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -29,6 +34,11 @@
     <ClInclude Include="Scenario1.xaml.h" />
     <ClInclude Include="Scenario2.xaml.h" />
     <ClInclude Include="Scenario3.xaml.h" />
+    <ClInclude Include="Scenario4.xaml.h" />
+    <ClInclude Include="Scenario5.xaml.h" />
+    <ClInclude Include="Scenario6.xaml.h" />
+    <ClInclude Include="Scenario7.xaml.h" />
+    <ClInclude Include="Scenario8.xaml.h" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />

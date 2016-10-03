@@ -44,4 +44,10 @@ namespace SDKTemplate
         Platform::String^ Title;
         Platform::String^ ClassName;
     };
+
+	class HelperFunctions
+	{
+	public:
+		static void UpdateCanvasSize(Windows::UI::Xaml::FrameworkElement^ root, Windows::UI::Xaml::FrameworkElement^ output, Windows::UI::Xaml::FrameworkElement^ inkCanvas);
+	};
 }

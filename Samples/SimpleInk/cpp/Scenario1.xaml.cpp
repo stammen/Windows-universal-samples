@@ -23,23 +23,22 @@ using namespace Windows::UI::Xaml::Data;
 using namespace Windows::UI::Xaml::Input;
 using namespace Windows::UI::Xaml::Media;
 using namespace Windows::UI::Xaml::Navigation;
+using namespace Windows::UI::Core;
+
+#include "SampleConfiguration.h"
 
 Scenario1::Scenario1() : rootPage(MainPage::Current)
 {
     InitializeComponent();
+
+	// Initialize the InkCanvas
+	inkCanvas->InkPresenter->InputDeviceTypes =
+		CoreInputDeviceTypes::Mouse |
+		CoreInputDeviceTypes::Pen;
 }
 
-void SDKTemplate::Scenario1::Button_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
-{
-    rootPage->NotifyUser("Hello", NotifyType::StatusMessage);
-}
 
-void SDKTemplate::Scenario1::Button_Click_2(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+void Scenario1::OnSizeChanged(Platform::Object^ sender, SizeChangedEventArgs e)
 {
-    rootPage->NotifyUser("Hello", NotifyType::ErrorMessage);
-}
-
-void SDKTemplate::Scenario1::Button_Click_3(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
-{
-    rootPage->NotifyUser("Hello How are you today. This is a very long message with a lot of text.\nLet's throw in some newline characters\nand\nsee\nwhat\nhappens.\nadsf\nasdf\nasdf\nasfd\nasdf\nasdf\nasfd", NotifyType::StatusMessage);
+	HelperFunctions::UpdateCanvasSize(RootGrid, outputGrid, inkCanvas);
 }

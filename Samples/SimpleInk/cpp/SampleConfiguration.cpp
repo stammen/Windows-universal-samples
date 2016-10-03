@@ -14,6 +14,8 @@
 #include "SampleConfiguration.h"
 
 using namespace SDKTemplate;
+using namespace Windows::UI::Xaml;
+using namespace Windows::UI::Xaml::Controls;
 
 Platform::Array<Scenario>^ MainPage::scenariosInner = ref new Platform::Array<Scenario>
 {
@@ -26,3 +28,14 @@ Platform::Array<Scenario>^ MainPage::scenariosInner = ref new Platform::Array<Sc
 	{ "Scenario 7", "SDKTemplate.Scenario7" },
 	{ "Scenario 8", "SDKTemplate.Scenario8" }
 };
+
+void HelperFunctions::UpdateCanvasSize(FrameworkElement^ root, FrameworkElement^ output, FrameworkElement^ inkCanvas)
+{
+	output->Width = root->ActualWidth;
+	output->Height = root->ActualHeight / 2;
+	inkCanvas->Width = root->ActualWidth;
+	inkCanvas->Height = root->ActualHeight / 2;
+}
+
+
+
