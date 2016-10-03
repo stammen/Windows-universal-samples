@@ -25,8 +25,8 @@ namespace SDKTemplate
     public:
         Scenario1();
     private:
-        MainPage^ rootPage;
 		void OnSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs e);
-
+		
+		MainPage^ rootPage;
     };
 }

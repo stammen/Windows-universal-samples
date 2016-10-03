@@ -26,6 +26,25 @@ namespace SDKTemplate
         Scenario3();
 
     private:
-        MainPage^ rootPage;
+		void OnSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs e);
+		void InkPresenter_StrokesErased(Windows::UI::Input::Inking::InkPresenter^ sender, Windows::UI::Input::Inking::InkStrokesErasedEventArgs^ args);
+		void InkPresenter_StrokesCollected(Windows::UI::Input::Inking::InkPresenter^ sender, Windows::UI::Input::Inking::InkStrokesCollectedEventArgs^ args);
+		void OnPenColorChanged(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+		void OnPenTypeChanged(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+		void OnPenThicknessChanged(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+		void OnClear(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+		void OnSaveAsync(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+		void OnLoadAsync(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+		void TouchInkingCheckBox_Checked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+		void TouchInkingCheckBox_Unchecked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+		void ErasingModeCheckBox_Checked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+		void ErasingModeCheckBox_Unchecked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+
+
+		MainPage^ rootPage;
+		const static int minPenSize = 2;
+		const static int penSizeIncrement = 2;
+
+		int penSize;
     };
 }
