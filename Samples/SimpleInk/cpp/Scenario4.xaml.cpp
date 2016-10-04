@@ -10,6 +10,7 @@
 //*********************************************************
 #include "pch.h"
 #include "Scenario4.xaml.h"
+#include "RecognizerHelper.h"
 
 #include <ppltasks.h>
 
@@ -174,8 +175,7 @@ void Scenario4::SetDefaultRecognizerByCurrentInputMethodLanguageTag()
 	if (currentInputLanguage != previousInputLanguage)
 	{
 		// try query with the full BCP47 name
-		Platform::String^ recognizerName = L"Microsoft English (US) Handwriting Recognizer";
-		//Platform::String^ recognizerName = RecognizerHelper->LanguageTagToRecognizerName(currentInputLanguage->LanguageTag);
+		Platform::String^ recognizerName = RecognizerHelper::LanguageTagToRecognizerName(currentInputLanguage->LanguageTag);
 
 		if (!recognizerName->IsEmpty())
 		{

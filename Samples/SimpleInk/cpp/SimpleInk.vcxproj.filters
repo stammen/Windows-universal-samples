@@ -25,6 +25,7 @@
     <ClCompile Include="Scenario6.xaml.cpp" />
     <ClCompile Include="Scenario7.xaml.cpp" />
     <ClCompile Include="Scenario8.xaml.cpp" />
+    <ClCompile Include="RecognizerHelper.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -39,6 +40,7 @@
     <ClInclude Include="Scenario6.xaml.h" />
     <ClInclude Include="Scenario7.xaml.h" />
     <ClInclude Include="Scenario8.xaml.h" />
+    <ClInclude Include="RecognizerHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest" />
