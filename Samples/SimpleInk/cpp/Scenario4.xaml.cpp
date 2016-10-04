@@ -11,6 +11,8 @@
 #include "pch.h"
 #include "Scenario4.xaml.h"
 
+#include <ppltasks.h>
+
 using namespace SDKTemplate;
 
 using namespace Platform;
@@ -23,23 +25,179 @@ using namespace Windows::UI::Xaml::Data;
 using namespace Windows::UI::Xaml::Input;
 using namespace Windows::UI::Xaml::Media;
 using namespace Windows::UI::Xaml::Navigation;
+using namespace Windows::UI::Input::Inking;
+using namespace Windows::UI::Core;
+using namespace Windows::UI::Text::Core;
+using namespace Windows::Globalization;
+using namespace concurrency;
 
-Scenario4::Scenario4() : rootPage(MainPage::Current)
+Scenario4::Scenario4() 
+	: rootPage(MainPage::Current)
+	, previousInputLanguage(nullptr)
+	, inkRecognizerContainer(nullptr)
+	, textServiceManager(nullptr)
+	, recoView(nullptr)
 {
     InitializeComponent();
+
+	// Initialize drawing attributes. These are used in inking mode.
+	InkDrawingAttributes^ drawingAttributes = ref new InkDrawingAttributes();
+	drawingAttributes->Color = Windows::UI::Colors::Red;
+	double penSize = 4;
+	drawingAttributes->Size = Size(penSize, penSize);
+	drawingAttributes->IgnorePressure = false;
+	drawingAttributes->FitToCurve = true;
+
+	// Show the available recognizers
+	inkRecognizerContainer = ref new InkRecognizerContainer();
+	recoView = inkRecognizerContainer->GetRecognizers();
+	if (recoView->Size > 0)
+	{
+		for(InkRecognizer^ recognizer : recoView)
+		{
+			RecoName->Items->Append(recognizer->Name);
+		}
+	}
+	else
+	{
+		RecoName->IsEnabled = false;
+		RecoName->Items->Append("No Recognizer Available");
+	}
+	RecoName->SelectedIndex = 0;
+
+	// Set the text services so we can query when language changes
+	textServiceManager = CoreTextServicesManager::GetForCurrentView();
+	textServiceManager->InputLanguageChanged += ref new TypedEventHandler<CoreTextServicesManager^, Platform::Object^>(this, &Scenario4::TextServiceManager_InputLanguageChanged);
+		
+	SetDefaultRecognizerByCurrentInputMethodLanguageTag();
+
+	// Initialize the InkCanvas
+	inkCanvas->InkPresenter->UpdateDefaultDrawingAttributes(drawingAttributes);
+	inkCanvas->InkPresenter->InputDeviceTypes = CoreInputDeviceTypes::Mouse | CoreInputDeviceTypes::Pen | CoreInputDeviceTypes::Touch;
 }
 
-void SDKTemplate::Scenario4::Button_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+void Scenario4::OnNavigatedFrom(NavigationEventArgs^ e)
 {
-    rootPage->NotifyUser("Hello", NotifyType::StatusMessage);
+	InstallReco->IsOpen = false;
 }
 
-void SDKTemplate::Scenario4::Button_Click_2(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+void Scenario4::OnSizeChanged(Platform::Object^ sender, SizeChangedEventArgs e)
 {
-    rootPage->NotifyUser("Hello", NotifyType::ErrorMessage);
+	HelperFunctions::UpdateCanvasSize(RootGrid, Output, inkCanvas);
 }
 
-void SDKTemplate::Scenario4::Button_Click_3(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+void Scenario4::OnRecognizeAsync(Platform::Object^ sender, RoutedEventArgs^ e)
 {
-    rootPage->NotifyUser("Hello How are you today. This is a very long message with a lot of text.\nLet's throw in some newline characters\nand\nsee\nwhat\nhappens.\nadsf\nasdf\nasdf\nasfd\nasdf\nasdf\nasfd", NotifyType::StatusMessage);
+	auto currentStrokes = inkCanvas->InkPresenter->StrokeContainer->GetStrokes();
+	if (currentStrokes->Size > 0)
+	{
+		RecognizeBtn->IsEnabled = false;
+		ClearBtn->IsEnabled = false;
+		RecoName->IsEnabled = false;
+
+		create_task(inkRecognizerContainer->RecognizeAsync(inkCanvas->InkPresenter->StrokeContainer, InkRecognitionTarget::All))
+			.then([this](IVectorView<InkRecognitionResult^>^ recognitionResults)
+		{
+			if (recognitionResults->Size > 0)
+			{
+				// Display recognition result
+				Platform::String^ str = "Recognition result:";
+				for (auto r : recognitionResults)
+				{
+					str += " " + r->GetTextCandidates()->GetAt(0);
+				}
+				rootPage->NotifyUser(str, NotifyType::StatusMessage);
+			}
+			else
+			{
+				rootPage->NotifyUser("No text recognized.", NotifyType::StatusMessage);
+			}
+
+			RecognizeBtn->IsEnabled = true;
+			ClearBtn->IsEnabled = true;
+			RecoName->IsEnabled = true;
+		});
+	}
+	else
+	{
+		rootPage->NotifyUser("Must first write something.", NotifyType::ErrorMessage);
+	}
+
 }
+
+
+void Scenario4::OnRecognizerChanged(Platform::Object^ sender, RoutedEventArgs^ e)
+{
+	Platform::String^ selectedValue = (Platform::String^)RecoName->SelectedValue;
+	SetRecognizerByName(selectedValue);
+}
+
+void Scenario4::OnClear(Platform::Object^ sender, RoutedEventArgs^ e)
+{
+	inkCanvas->InkPresenter->StrokeContainer->Clear();
+	rootPage->NotifyUser("Cleared Canvas.", NotifyType::StatusMessage);
+}
+
+bool Scenario4::SetRecognizerByName(Platform::String^ recognizerName)
+{
+	bool recognizerFound = false;
+
+	for(InkRecognizer^ reco : recoView)
+	{
+		if (recognizerName == reco->Name)
+		{
+			inkRecognizerContainer->SetDefaultRecognizer(reco);
+			recognizerFound = true;
+			break;
+		}
+	}
+
+	if (!recognizerFound && rootPage != nullptr)
+	{
+		rootPage->NotifyUser("Could not find target recognizer.", NotifyType::ErrorMessage);
+	}
+
+	return recognizerFound;
+}
+
+void Scenario4::TextServiceManager_InputLanguageChanged(CoreTextServicesManager^ sender, Platform::Object^ args)
+{
+	SetDefaultRecognizerByCurrentInputMethodLanguageTag();
+}
+
+
+void Scenario4::SetDefaultRecognizerByCurrentInputMethodLanguageTag()
+{
+	// Query recognizer name based on current input method language tag (bcp47 tag)
+	auto currentInputLanguage = textServiceManager->InputLanguage;
+
+	if (currentInputLanguage != previousInputLanguage)
+	{
+		// try query with the full BCP47 name
+		Platform::String^ recognizerName = L"Microsoft English (US) Handwriting Recognizer";
+		//Platform::String^ recognizerName = RecognizerHelper->LanguageTagToRecognizerName(currentInputLanguage->LanguageTag);
+
+		if (!recognizerName->IsEmpty())
+		{
+			for (int index = 0; index < recoView->Size; index++)
+			{
+				if (recoView->GetAt(index)->Name == recognizerName)
+				{
+					inkRecognizerContainer->SetDefaultRecognizer(recoView->GetAt(index));
+					RecoName->SelectedIndex = index;
+					previousInputLanguage = currentInputLanguage;
+					break;
+				}
+			}
+		}
+	}
+}
+
+void Scenario4::RecoButton_Click(Platform::Object^ sender, RoutedEventArgs^ e)
+{
+	InstallReco->IsOpen = !InstallReco->IsOpen;
+}
+
+
+
+
