@@ -69,7 +69,7 @@ Scenario2::Scenario2() : rootPage(MainPage::Current)
 	inkCanvas->InkPresenter->StrokeInput->StrokeEnded += ref new TypedEventHandler<InkStrokeInput^, PointerEventArgs^>(this, &Scenario2::InkPresenter_StrokesErased);
 }
 
-void Scenario2::OnSizeChanged(Platform::Object^ sender, SizeChangedEventArgs e)
+void Scenario2::OnSizeChanged(Platform::Object^ sender, SizeChangedEventArgs^ e)
 {
 	HelperFunctions::UpdateCanvasSize(RootGrid, outputGrid, inkCanvas);
 }

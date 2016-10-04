@@ -38,7 +38,7 @@ Scenario1::Scenario1() : rootPage(MainPage::Current)
 }
 
 
-void Scenario1::OnSizeChanged(Platform::Object^ sender, SizeChangedEventArgs e)
+void Scenario1::OnSizeChanged(Platform::Object^ sender, SizeChangedEventArgs^ e)
 {
 	HelperFunctions::UpdateCanvasSize(RootGrid, outputGrid, inkCanvas);
 }

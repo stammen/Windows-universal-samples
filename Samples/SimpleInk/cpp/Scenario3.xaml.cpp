@@ -56,6 +56,12 @@ Scenario3::Scenario3() : rootPage(MainPage::Current)
 	inkCanvas->InkPresenter->StrokesErased += ref new TypedEventHandler<InkPresenter^, InkStrokesErasedEventArgs^>(this, &Scenario3::InkPresenter_StrokesErased);
 }
 
+void Scenario3::OnSizeChanged(Platform::Object^ sender, SizeChangedEventArgs e)
+{
+	HelperFunctions::UpdateCanvasSize(RootGrid, outputGrid, inkCanvas);
+}
+
+
 void Scenario3::InkPresenter_StrokesErased(InkPresenter^ sender, InkStrokesErasedEventArgs^ args)
 {
 	rootPage->NotifyUser(args->Strokes->Size + " stroke(s) erased!", NotifyType::StatusMessage);
@@ -66,7 +72,7 @@ void Scenario3::InkPresenter_StrokesCollected(InkPresenter^ sender, InkStrokesCo
 	rootPage->NotifyUser(args->Strokes->Size + " stroke(s) collected!", NotifyType::StatusMessage);
 }
 
-void Scenario3::OnSizeChanged(Platform::Object^ sender, SizeChangedEventArgs e)
+void Scenario3::OnSizeChanged(Platform::Object^ sender, SizeChangedEventArgs^ e)
 {
 	HelperFunctions::UpdateCanvasSize(RootGrid, outputGrid, inkCanvas);
 }

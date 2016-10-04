@@ -33,7 +33,7 @@ namespace SDKTemplate
  		void StrokeInput_StrokeStarted(Windows::UI::Input::Inking::InkStrokeInput^ sender, Windows::UI::Core::PointerEventArgs^ args);
 		void InkPresenter_StrokesErased(Windows::UI::Input::Inking::InkStrokeInput^ sender, Windows::UI::Core::PointerEventArgs^ args);
 
-		void OnSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs e);
+		void OnSizeChanged(Platform::Object^ sender, Windows::UI::Xaml::SizeChangedEventArgs^ e);
 		void Toggle_Custom(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
 		void ToolButton_Lasso(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
 
