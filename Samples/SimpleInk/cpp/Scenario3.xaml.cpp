@@ -180,75 +180,120 @@ void Scenario3::OnClear(Platform::Object^ sender, RoutedEventArgs^ e)
 void Scenario3::OnSaveAsync(Platform::Object^ sender, RoutedEventArgs^ e)
 {
 	// We don't want to save an empty file
-	if (inkCanvas->InkPresenter->StrokeContainer->GetStrokes()->Size > 0)
+	if (inkCanvas->InkPresenter->StrokeContainer->GetStrokes()->Size == 0)
 	{
-		auto savePicker = ref new FileSavePicker();
-		savePicker->SuggestedStartLocation = PickerLocationId::PicturesLibrary;
+		return;
+	}
 
-		auto extensions = ref new Platform::Collections::Vector<String^>();
-		extensions->Append(".gif");
-		savePicker->FileTypeChoices->Insert("Plain Text", extensions);
-		savePicker->SuggestedFileName = "Scenario3";
+	auto savePicker = ref new FileSavePicker();
+	savePicker->SuggestedStartLocation = PickerLocationId::PicturesLibrary;
 
-		create_task(savePicker->PickSaveFileAsync()).then([this](StorageFile^ file)
+	auto extensions = ref new Platform::Collections::Vector<String^>();
+	extensions->Append(".gif");
+	savePicker->FileTypeChoices->Insert("Plain Text", extensions);
+	savePicker->SuggestedFileName = "Scenario3";
+
+	auto t = create_task(savePicker->PickSaveFileAsync()).then([this](StorageFile^ file)
+	{
+		if (file != nullptr)
 		{
-			if (file != nullptr)
-			{
-				// Prevent updates to the remote version of the file until we finish making changes and call CompleteUpdatesAsync.
-				CachedFileManager::DeferUpdates(file);
+			// Prevent updates to the remote version of the file until we finish making changes and call CompleteUpdatesAsync.
+			CachedFileManager::DeferUpdates(file);
 
-				// write to file
-				create_task(file->OpenAsync(FileAccessMode::ReadWrite)).then([this, file](IRandomAccessStream^ stream)
+			// write to file
+			return create_task(file->OpenAsync(FileAccessMode::ReadWrite)).then([this, file](IRandomAccessStream^ stream)
+			{
+				// Let Windows know that we're finished changing the file so the other app can update the remote version of the file.
+				// Completing updates may require Windows to ask for user input.
+				return create_task(inkCanvas->InkPresenter->StrokeContainer->SaveAsync(stream)).then([this, file](std::size_t size)
 				{
 					// Let Windows know that we're finished changing the file so the other app can update the remote version of the file.
 					// Completing updates may require Windows to ask for user input.
-					create_task(inkCanvas->InkPresenter->StrokeContainer->SaveAsync(stream)).then([this, file](std::size_t size)
+					return create_task(CachedFileManager::CompleteUpdatesAsync(file)).then([this, file](FileUpdateStatus status)
 					{
-						// Let Windows know that we're finished changing the file so the other app can update the remote version of the file.
-						// Completing updates may require Windows to ask for user input.
-						create_task(CachedFileManager::CompleteUpdatesAsync(file)).then([this, file](FileUpdateStatus status)
-						{
-							if (status == FileUpdateStatus::Complete)
-							{
-								rootPage->NotifyUser("File " + file->Name + " was saved.", NotifyType::StatusMessage);
-							}
-							else
-							{
-								rootPage->NotifyUser("File " + file->Name + " couldn't be saved", NotifyType::StatusMessage);
-							}
-						});
+						return status == FileUpdateStatus::Complete;
 					});
 				});
+			});
+		}
+		else
+		{
+			return create_task([]{
+				return false;
+			});
+		}
+	})
+	.then([this](task<bool> t)
+	{
+		try
+		{
+			bool saved = t.get();
+			if (saved)
+			{
+				rootPage->NotifyUser("File was saved", NotifyType::StatusMessage);
 			}
-		});
-	}
+			else
+			{
+				rootPage->NotifyUser("File was not saved", NotifyType::StatusMessage);
+			}
+		}
+		catch (Platform::Exception^ ex)
+		{
+			//Example output: The system cannot find the specified file.
+			rootPage->NotifyUser(ex->Message, NotifyType::ErrorMessage);
+		}
+ 	});
 }
 
 void Scenario3::OnLoadAsync(Platform::Object^ sender, RoutedEventArgs^ e)
 {
-#if 0
-	var openPicker = new Windows.Storage.Pickers.FileOpenPicker();
-	openPicker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
-	openPicker.FileTypeFilter.Add(".gif");
-	openPicker.FileTypeFilter.Add(".isf");
-	Windows.Storage.StorageFile file = await openPicker.PickSingleFileAsync();
-	if (null != file)
+	auto openPicker = ref new Pickers::FileOpenPicker();
+	openPicker->SuggestedStartLocation = Pickers::PickerLocationId::PicturesLibrary;
+	openPicker->FileTypeFilter->Append(".gif");
+	openPicker->FileTypeFilter->Append(".isf");
+
+	auto t = create_task(openPicker->PickSingleFileAsync()).then([this](StorageFile^ file)
 	{
-		using (var stream = await file.OpenSequentialReadAsync())
+		if (file != nullptr)
 		{
-			try
+			// read file
+			return create_task(file->OpenSequentialReadAsync()).then([this, file](IInputStream^ stream)
 			{
-				await inkCanvas.InkPresenter.StrokeContainer.LoadAsync(stream);
+				// Let Windows know that we're finished changing the file so the other app can update the remote version of the file.
+				// Completing updates may require Windows to ask for user input.
+				return create_task(inkCanvas->InkPresenter->StrokeContainer->LoadAsync(stream)).then([]()
+				{
+					// Let Windows know that we're finished changing the file so the other app can update the remote version of the file.
+					return true;
+				});
+			});
+		}
+		else
+		{
+			return create_task([] {
+				return false;
+			});
+		}
+	})
+	.then([this](task<bool> t)
+	{
+		try
+		{
+			bool saved = t.get();
+			if (saved)
+			{
+				rootPage->NotifyUser("File was loaded", NotifyType::StatusMessage);
 			}
-			catch (Exception ex)
+			else
 			{
-				rootPage->NotifyUser(ex.Message, NotifyType.ErrorMessage);
+				rootPage->NotifyUser("File was not loaded", NotifyType::StatusMessage);
 			}
 		}
-
-		rootPage->NotifyUser(inkCanvas.InkPresenter.StrokeContainer.GetStrokes().Count + " stroke(s) loaded!", NotifyType.StatusMessage);
-	}
-#endif
+		catch (Platform::Exception^ ex)
+		{
+			rootPage->NotifyUser(ex->Message, NotifyType::ErrorMessage);
+		}
+	});
 }
 
 void Scenario3::TouchInkingCheckBox_Checked(Platform::Object^ sender, RoutedEventArgs^ e)
