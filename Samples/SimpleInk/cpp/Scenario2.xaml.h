@@ -53,6 +53,9 @@ namespace SDKTemplate
 		Windows::UI::Xaml::Shapes::Polyline^ lasso;
 		Windows::Foundation::Rect boundingRect;
 		bool isBoundRect;
+		Windows::Foundation::EventRegistrationToken pointerPressedToken;
+		Windows::Foundation::EventRegistrationToken pointerMovedToken;
+		Windows::Foundation::EventRegistrationToken pointerReleasedToken;
 
 
     };

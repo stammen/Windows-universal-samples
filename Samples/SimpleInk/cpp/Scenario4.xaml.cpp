@@ -179,7 +179,7 @@ void Scenario4::SetDefaultRecognizerByCurrentInputMethodLanguageTag()
 
 		if (!recognizerName->IsEmpty())
 		{
-			for (int index = 0; index < recoView->Size; index++)
+			for (unsigned int index = 0; index < recoView->Size; index++) 
 			{
 				if (recoView->GetAt(index)->Name == recognizerName)
 				{

@@ -69,52 +69,107 @@ Scenario2::Scenario2() : rootPage(MainPage::Current)
 	inkCanvas->InkPresenter->StrokeInput->StrokeEnded += ref new TypedEventHandler<InkStrokeInput^, PointerEventArgs^>(this, &Scenario2::InkPresenter_StrokesErased);
 }
 
+void Scenario2::StrokeInput_StrokeStarted(InkStrokeInput^ sender, PointerEventArgs^ args)
+{
+	ClearSelection();
+	inkCanvas->InkPresenter->UnprocessedInput->PointerPressed -= pointerPressedToken;
+	inkCanvas->InkPresenter->UnprocessedInput->PointerMoved -= pointerMovedToken;
+	inkCanvas->InkPresenter->UnprocessedInput->PointerReleased -= pointerReleasedToken;
+}
+
+void Scenario2::InkPresenter_StrokesErased(InkStrokeInput^ sender, PointerEventArgs^ args)
+{
+	ClearSelection();
+	inkCanvas->InkPresenter->UnprocessedInput->PointerPressed -= pointerPressedToken;
+	inkCanvas->InkPresenter->UnprocessedInput->PointerMoved -= pointerMovedToken;
+	inkCanvas->InkPresenter->UnprocessedInput->PointerReleased -= pointerReleasedToken;
+}
+
 void Scenario2::OnSizeChanged(Platform::Object^ sender, SizeChangedEventArgs^ e)
 {
 	HelperFunctions::UpdateCanvasSize(RootGrid, outputGrid, inkCanvas);
 }
 
-void Scenario2::StrokeInput_StrokeStarted(InkStrokeInput^ sender, PointerEventArgs^ args)
-{
-	ClearSelection();
-
-}
-
-void Scenario2::InkPresenter_StrokesErased(InkStrokeInput^ sender, PointerEventArgs^ args)
-{
-
-}
 
 void Scenario2::Toggle_Custom(Platform::Object^ sender, RoutedEventArgs^ e)
 {
-
+	if (toggleButton->IsChecked)
+	{
+		auto types = inkCanvas->InkPresenter->InputDeviceTypes;
+		inkCanvas->InkPresenter->InputDeviceTypes = types |CoreInputDeviceTypes::Touch;
+	}
+	else
+	{
+		auto types = inkCanvas->InkPresenter->InputDeviceTypes;
+		inkCanvas->InkPresenter->InputDeviceTypes = types & ~CoreInputDeviceTypes::Touch;
+	}
 }
 
 void Scenario2::UnprocessedInput_PointerPressed(InkUnprocessedInput^ sender, PointerEventArgs^  args)
 {
-
+	lasso = ref new Polyline();
+	lasso->Stroke = ref new SolidColorBrush(Windows::UI::Colors::Blue);
+	lasso->StrokeThickness = 1;
+	lasso->StrokeDashArray = ref  new DoubleCollection();
+	lasso->StrokeDashArray->Append(5.0);
+	lasso->StrokeDashArray->Append(2.0);
+	lasso->Points->Append(args->CurrentPoint->RawPosition);
+	selectionCanvas->Children->Append(lasso);
+	isBoundRect = true;
 }
 
 void Scenario2::UnprocessedInput_PointerMoved(InkUnprocessedInput^ sender, PointerEventArgs^  args)
 {
-
+	if (isBoundRect)
+	{
+		lasso->Points->Append(args->CurrentPoint->RawPosition);
+	}
 }
 
 void Scenario2::UnprocessedInput_PointerReleased(InkUnprocessedInput^ sender, PointerEventArgs^ args)
 {
+	lasso->Points->Append(args->CurrentPoint->RawPosition);
 
+	boundingRect = inkCanvas->InkPresenter->StrokeContainer->SelectWithPolyLine(lasso->Points);
+	isBoundRect = false;
+	DrawBoundingRect();
 }
 
 
 void Scenario2::DrawBoundingRect()
 {
+	selectionCanvas->Children->Clear();
 
+	if (boundingRect.Width <= 0 || boundingRect.Height <= 0)
+	{
+		return;
+	}
+
+	auto rectangle = ref new Rectangle();
+	rectangle->Stroke = ref new SolidColorBrush(Windows::UI::Colors::Blue);
+	rectangle->StrokeThickness = 1;
+	rectangle->StrokeDashArray = ref  new DoubleCollection();
+	rectangle->StrokeDashArray->Append(5.0);
+	rectangle->StrokeDashArray->Append(2.0);
+	rectangle->Width = boundingRect.Width;
+	rectangle->Height = boundingRect.Height;
+
+
+	selectionCanvas->SetLeft(rectangle, boundingRect.X);
+	selectionCanvas->SetTop(rectangle, boundingRect.Y);
+	selectionCanvas->Children->Append(rectangle);
 }
 
 
 void Scenario2::ToolButton_Lasso(Platform::Object^ sender, RoutedEventArgs^ e)
 {
+	// By default, pen barrel button or right mouse button is processed for inking
+	// Set the configuration to instead allow processing these input on the UI thread
+	inkCanvas->InkPresenter->InputProcessingConfiguration->RightDragAction = InkInputRightDragAction::LeaveUnprocessed;
 
+	pointerPressedToken = inkCanvas->InkPresenter->UnprocessedInput->PointerPressed += ref new TypedEventHandler<InkUnprocessedInput^, PointerEventArgs^>(this, &Scenario2::UnprocessedInput_PointerPressed);
+	pointerMovedToken = inkCanvas->InkPresenter->UnprocessedInput->PointerMoved += ref new TypedEventHandler<InkUnprocessedInput^, PointerEventArgs^>(this, &Scenario2::UnprocessedInput_PointerMoved);
+	pointerReleasedToken = inkCanvas->InkPresenter->UnprocessedInput->PointerReleased += ref new TypedEventHandler<InkUnprocessedInput^, PointerEventArgs^>(this, &Scenario2::UnprocessedInput_PointerReleased);
 }
 
 void Scenario2::ClearDrawnBoundingRect()
