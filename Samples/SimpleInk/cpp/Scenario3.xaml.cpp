@@ -15,6 +15,7 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <ppltasks.h>
 
 using namespace SDKTemplate;
 
@@ -31,10 +32,13 @@ using namespace Windows::UI::Xaml::Navigation;
 using namespace Windows::UI::Input::Inking;
 using namespace Windows::UI::Core;
 using namespace Windows::Foundation::Numerics;
-
+using namespace Windows::Storage;
+using namespace Windows::Storage::Pickers;
+using namespace Windows::Storage::Provider;
+using namespace Windows::Storage::Streams;
+using namespace concurrency;
 
 Scenario3::Scenario3() : rootPage(MainPage::Current)
-
 {
     InitializeComponent();
 
@@ -52,7 +56,6 @@ Scenario3::Scenario3() : rootPage(MainPage::Current)
 	inkCanvas->InkPresenter->StrokesErased += ref new TypedEventHandler<InkPresenter^, InkStrokesErasedEventArgs^>(this, &Scenario3::InkPresenter_StrokesErased);
 }
 
-
 void Scenario3::InkPresenter_StrokesErased(InkPresenter^ sender, InkStrokesErasedEventArgs^ args)
 {
 	rootPage->NotifyUser(args->Strokes->Size + " stroke(s) erased!", NotifyType::StatusMessage);
@@ -62,7 +65,6 @@ void Scenario3::InkPresenter_StrokesCollected(InkPresenter^ sender, InkStrokesCo
 {
 	rootPage->NotifyUser(args->Strokes->Size + " stroke(s) collected!", NotifyType::StatusMessage);
 }
-
 
 void Scenario3::OnSizeChanged(Platform::Object^ sender, SizeChangedEventArgs e)
 {
@@ -177,36 +179,49 @@ void Scenario3::OnClear(Platform::Object^ sender, RoutedEventArgs^ e)
 
 void Scenario3::OnSaveAsync(Platform::Object^ sender, RoutedEventArgs^ e)
 {
-#if 0
 	// We don't want to save an empty file
 	if (inkCanvas->InkPresenter->StrokeContainer->GetStrokes()->Size > 0)
 	{
-		auto savePicker = ref new Windows::Storage::Pickers::FileSavePicker();
-		savePicker->SuggestedStartLocation = Windows::Storage::Pickers::PickerLocationId::PicturesLibrary;
-		savePicker->FileTypeChoices.Add("Gif with embedded ISF", new System.Collections.Generic.List<Platform::String^> { ".gif" });
+		auto savePicker = ref new FileSavePicker();
+		savePicker->SuggestedStartLocation = PickerLocationId::PicturesLibrary;
 
-		Windows.Storage.StorageFile file = await savePicker->PickSaveFileAsync();
-		if (null != file)
+		auto extensions = ref new Platform::Collections::Vector<String^>();
+		extensions->Append(".gif");
+		savePicker->FileTypeChoices->Insert("Plain Text", extensions);
+		savePicker->SuggestedFileName = "Scenario3";
+
+		create_task(savePicker->PickSaveFileAsync()).then([this](StorageFile^ file)
 		{
-			try
+			if (file != nullptr)
 			{
-				using (IRandomAccessStream stream = await file.OpenAsync(FileAccessMode.ReadWrite))
+				// Prevent updates to the remote version of the file until we finish making changes and call CompleteUpdatesAsync.
+				CachedFileManager::DeferUpdates(file);
+
+				// write to file
+				create_task(file->OpenAsync(FileAccessMode::ReadWrite)).then([this, file](IRandomAccessStream^ stream)
 				{
-					await inkCanvas.InkPresenter.StrokeContainer.SaveAsync(stream);
-				}
-				rootPage->NotifyUser(inkCanvas.InkPresenter.StrokeContainer.GetStrokes().Count + " stroke(s) saved!", NotifyType.StatusMessage);
+					// Let Windows know that we're finished changing the file so the other app can update the remote version of the file.
+					// Completing updates may require Windows to ask for user input.
+					create_task(inkCanvas->InkPresenter->StrokeContainer->SaveAsync(stream)).then([this, file](std::size_t size)
+					{
+						// Let Windows know that we're finished changing the file so the other app can update the remote version of the file.
+						// Completing updates may require Windows to ask for user input.
+						create_task(CachedFileManager::CompleteUpdatesAsync(file)).then([this, file](FileUpdateStatus status)
+						{
+							if (status == FileUpdateStatus::Complete)
+							{
+								rootPage->NotifyUser("File " + file->Name + " was saved.", NotifyType::StatusMessage);
+							}
+							else
+							{
+								rootPage->NotifyUser("File " + file->Name + " couldn't be saved", NotifyType::StatusMessage);
+							}
+						});
+					});
+				});
 			}
-			catch (Exception ex)
-			{
-				rootPage->NotifyUser(ex.Message, NotifyType.ErrorMessage);
-			}
-		}
+		});
 	}
-	else
-	{
-		rootPage->NotifyUser("There is no ink to save.", NotifyType::ErrorMessage);
-	}
-#endif
 }
 
 void Scenario3::OnLoadAsync(Platform::Object^ sender, RoutedEventArgs^ e)
