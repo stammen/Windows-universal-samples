@@ -150,6 +150,9 @@
     <ClInclude Include="Scenario3.xaml.h">
       <DependentUpon>Scenario3.xaml</DependentUpon>
     </ClInclude>
+    <ClInclude Include="Scenario4.xaml.h">
+      <DependentUpon>Scenario4.xaml</DependentUpon>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="..\..\..\SharedContent\xaml\App.xaml">
@@ -164,6 +167,7 @@
     <Page Include="..\..\..\SharedContent\xaml\Styles.xaml">
       <Link>Styles\Styles.xaml</Link>
     </Page>
+    <Page Include="Scenario4.xaml" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -194,6 +198,9 @@
     </ClCompile>
     <ClCompile Include="Scenario3.xaml.cpp">
       <DependentUpon>Scenario3.xaml</DependentUpon>
+    </ClCompile>
+    <ClCompile Include="Scenario4.xaml.cpp">
+      <DependentUpon>Scenario4.xaml</DependentUpon>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
