@@ -27,7 +27,6 @@ using namespace Windows::UI::Xaml::Media;
 using namespace Windows::UI::Xaml::Navigation;
 
 Scenario4::Scenario4() : rootPage(MainPage::Current)
-
 {
     InitializeComponent();
 
@@ -52,7 +51,6 @@ Scenario4::Scenario4() : rootPage(MainPage::Current)
 		ManipulationModes::Rotate |
 		ManipulationModes::TranslateInertia |
 		ManipulationModes::RotateInertia;
-
 }
 
 void Scenario4::InitManipulationTransforms()
