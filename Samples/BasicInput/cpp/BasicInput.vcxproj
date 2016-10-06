@@ -147,8 +147,8 @@
     <ClInclude Include="Scenario2.xaml.h">
       <DependentUpon>Scenario2.xaml</DependentUpon>
     </ClInclude>
-    <ClInclude Include="Scenario3_ShortName.xaml.h">
-      <DependentUpon>Scenario3_ShortName.xaml</DependentUpon>
+    <ClInclude Include="Scenario3.xaml.h">
+      <DependentUpon>Scenario3.xaml</DependentUpon>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -160,7 +160,7 @@
     </Page>
     <Page Include="Scenario1.xaml" />
     <Page Include="Scenario2.xaml" />
-    <Page Include="Scenario3_ShortName.xaml" />
+    <Page Include="Scenario3.xaml" />
     <Page Include="..\..\..\SharedContent\xaml\Styles.xaml">
       <Link>Styles\Styles.xaml</Link>
     </Page>
@@ -192,8 +192,8 @@
     <ClCompile Include="Scenario2.xaml.cpp">
       <DependentUpon>Scenario2.xaml</DependentUpon>
     </ClCompile>
-    <ClCompile Include="Scenario3_ShortName.xaml.cpp">
-      <DependentUpon>Scenario3_ShortName.xaml</DependentUpon>
+    <ClCompile Include="Scenario3.xaml.cpp">
+      <DependentUpon>Scenario3.xaml</DependentUpon>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
