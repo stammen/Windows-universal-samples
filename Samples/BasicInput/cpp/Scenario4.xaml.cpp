@@ -33,6 +33,8 @@ Scenario4::Scenario4() : rootPage(MainPage::Current)
 
 	forceManipulationsToEnd = false;
 
+	InitOptions();
+
 	// Initialize the transforms that will be used to manipulate the shape
 	InitManipulationTransforms();
 
