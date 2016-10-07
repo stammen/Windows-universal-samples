@@ -120,7 +120,8 @@ void Scenario4::movementAxis_Changed(Platform::Object^ sender, SelectionChangedE
 	auto update = ManipulationModes::TranslateX | ManipulationModes::TranslateY;
 	manipulateMe->ManipulationMode = mode | update;
 
-	ComboBoxItem^ selectedItem = (ComboBoxItem^)((ComboBox^)sender)->SelectedItem;
+	ComboBox^ cb = dynamic_cast<ComboBox^>(sender);
+	ComboBoxItem^ selectedItem = dynamic_cast<ComboBoxItem^>((cb)->SelectedItem);
 
 	auto selection = selectedItem->Content->ToString();
 

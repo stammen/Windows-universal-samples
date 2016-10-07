@@ -191,10 +191,10 @@ void Scenario2::RenderPropertyPopUp(Platform::String^ pointerProperties, Platfor
 	auto it = popups.find(currentPoint->PointerId);
 	if (it != popups.end())
 	{ 
-		auto tb = (StackPanel^)it->second;
-		TextBlock^ pointerText = (TextBlock^)tb->Children->GetAt(0);
+		auto tb = dynamic_cast<StackPanel^>(it->second);
+		TextBlock^ pointerText = dynamic_cast<TextBlock^>(tb->Children->GetAt(0));
 		pointerText->Text = pointerProperties;
-		TextBlock^ deviceSpecificText = (TextBlock^)(TextBlock^)tb->Children->GetAt(1);
+		TextBlock^ deviceSpecificText = dynamic_cast<TextBlock^>(tb->Children->GetAt(1));
 		deviceSpecificText->Text = deviceSpecificProperties;
 	}
 	else
@@ -239,7 +239,7 @@ void Scenario2::HidePropertyPopUp(Windows::UI::Input::PointerPoint^ currentPoint
 	auto it = popups.find(currentPoint->PointerId);
 	if (it != popups.end())
 	{
-		auto stackPanel = (StackPanel^)it->second;
+		auto stackPanel = dynamic_cast<StackPanel^>(it->second);
 		unsigned int index;
 		mainCanvas->Children->IndexOf(stackPanel, &index);
 		mainCanvas->Children->RemoveAt(index);

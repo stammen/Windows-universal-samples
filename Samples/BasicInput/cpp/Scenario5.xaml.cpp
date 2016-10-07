@@ -56,7 +56,9 @@ void Scenario5::movementAxis_Changed(Platform::Object^ sender, SelectionChangedE
 		return;
 	}
 
-	ComboBoxItem^ selectedItem = (ComboBoxItem^)((ComboBox^)sender)->SelectedItem;
+	ComboBox^ cb = dynamic_cast<ComboBox^>(sender);
+	ComboBoxItem^ selectedItem = dynamic_cast<ComboBoxItem^>((cb)->SelectedItem);
+
 	auto selection = selectedItem->Content->ToString();
 
 	if (selection == L"X only")
@@ -183,7 +185,7 @@ void ManipulationInputProcessor::OnPointerCanceled(Platform::Object^ sender, Poi
 // that a manipulation is in progress
 void ManipulationInputProcessor::OnManipulationStarted(GestureRecognizer^ sender, ManipulationStartedEventArgs^ e)
 {
-	Border^ b = (Border^)element;
+	Border^ b = dynamic_cast<Border^>(element);
 	b->Background = ref new SolidColorBrush(Windows::UI::Colors::DeepSkyBlue);
 }
 
@@ -208,14 +210,14 @@ void ManipulationInputProcessor::OnManipulationUpdated(GestureRecognizer^ sender
 // the Platform::Object^ to reflect that inertia has taken over
 void ManipulationInputProcessor::OnManipulationInertiaStarting(GestureRecognizer^ sender, ManipulationInertiaStartingEventArgs^ e)
 {
-	Border^ b = (Border^)element;
+	Border^ b = dynamic_cast<Border^>(element);
 	b->Background = ref new SolidColorBrush(Windows::UI::Colors::RoyalBlue);
 }
 
 // When a manipulation has finished, reset the color of the Platform::Object^
 void ManipulationInputProcessor::OnManipulationCompleted(GestureRecognizer^ sender, ManipulationCompletedEventArgs^ e)
 {
-	Border^ b = (Border^)element;
+	Border^ b = dynamic_cast<Border^>(element);
 	b->Background = ref new SolidColorBrush(Windows::UI::Colors::LightGray);
 }
 
