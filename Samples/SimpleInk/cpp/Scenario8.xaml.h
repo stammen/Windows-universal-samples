@@ -25,10 +25,30 @@ namespace SDKTemplate
     public:
         Scenario8();
     private:
+
+        void InkStackPanel_Loaded(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs e);
+        void CoreWetStrokeUpdateSource_WetStrokeStarting(Windows::UI::Input::Inking::Core::CoreWetStrokeUpdateSource^ sender, Windows::UI::Input::Inking::Core::CoreWetStrokeUpdateEventArgs^ args);
+        void CoreWetStrokeUpdateSource_WetStrokeContinuing(Windows::UI::Input::Inking::Core::CoreWetStrokeUpdateSource^ sender, Windows::UI::Input::Inking::Core::CoreWetStrokeUpdateEventArgs^ args);
+        void CoreWetStrokeUpdateSource_WetStrokeStopping(Windows::UI::Input::Inking::Core::CoreWetStrokeUpdateSource^ sender, Windows::UI::Input::Inking::Core::CoreWetStrokeUpdateEventArgs^ args);
+        void CoreWetStrokeUpdateSource_WetStrokeCompleted(Windows::UI::Input::Inking::Core::CoreWetStrokeUpdateSource^ sender, Windows::UI::Input::Inking::Core::CoreWetStrokeUpdateEventArgs^ args);
+        void CoreWetStrokeUpdateSource_WetStrokeCanceled(Windows::UI::Input::Inking::Core::CoreWetStrokeUpdateSource^ sender, Windows::UI::Input::Inking::Core::CoreWetStrokeUpdateEventArgs^ args);
+        bool FollowCircleTest(Windows::UI::Input::Inking::Core::CoreWetStrokeUpdateEventArgs^ args);
+        void HandleFollowCircleInput(Windows::UI::Input::Inking::Core::CoreWetStrokeUpdateEventArgs^ args);
+        void HandleRegularInput(Windows::UI::Input::Inking::Core::CoreWetStrokeUpdateEventArgs^ args);
+        double DistanceFromCenter(Windows::Foundation::Point position);
+        bool InCircleEdgeZone(double distanceFromCenter);
+
         MainPage^ rootPage;
-        void Button_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
-        void Button_Click_1(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
-        void Button_Click_2(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
-        void Button_Click_3(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+
+        static const float radius;
+        static const float circleStrokeThickness;
+        static const float penSize;
+
+        Windows::UI::Input::Inking::Core::CoreWetStrokeUpdateSource^ coreWetStrokeUpdateSource;
+
+        Windows::Foundation::Point circleCenter;
+        bool followCircle;
+        bool discontinueStroke;
+        bool disableFollowCircle;
     };
 }
