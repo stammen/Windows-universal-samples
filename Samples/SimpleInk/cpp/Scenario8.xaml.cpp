@@ -186,12 +186,9 @@ void Scenario8::HandleRegularInput(CoreWetStrokeUpdateEventArgs^ args)
             // Ink input entered the circle. Handle this by removing remaining InkPoints
             // and completing the stroke.
 
-            if (args->NewInkPoints->Size > 0)
+            for (int j = args->NewInkPoints->Size - 1; j >= i; j--)
             {
-                for (int j = args->NewInkPoints->Size - 1; j >= i; j--)
-                {
-                    args->NewInkPoints->RemoveAt(j);
-                }
+                args->NewInkPoints->RemoveAt(j);
             }
 
             args->Disposition = CoreWetStrokeDisposition::Completed;
