@@ -32,115 +32,115 @@ MainPage^ MainPage::Current = nullptr;
 
 MainPage::MainPage()
 {
-    InitializeComponent();
-    SampleTitle->Text = FEATURE_NAME;
+  InitializeComponent();
+  SampleTitle->Text = FEATURE_NAME;
 
-    // This is a static public property that allows downstream pages to get a handle to the MainPage instance
-    // in order to call methods that are in this class.
-    MainPage::Current = this;
+  // This is a static public property that allows downstream pages to get a handle to the MainPage instance
+  // in order to call methods that are in this class.
+  MainPage::Current = this;
 
-    // Caching your main page is good practice, this makes it snappy for the user to return to "home" of your app.
-    NavigationCacheMode = Navigation::NavigationCacheMode::Required;
+  // Caching your main page is good practice, this makes it snappy for the user to return to "home" of your app.
+  NavigationCacheMode = Navigation::NavigationCacheMode::Required;
 }
 
 void MainPage::OnNavigatedTo(NavigationEventArgs^ e)
 {
-    // Populate the ListBox with the scenarios as defined in SampleConfiguration.cpp.
-    auto itemCollection = ref new Platform::Collections::Vector<Object^>();
-    int i = 1;
-    for (auto const& s : MainPage::Current->scenarios)
-    {
-        // Create a textBlock to hold the content and apply the ListItemTextStyle from Styles.xaml
-        TextBlock^ textBlock = ref new TextBlock();
-        ListBoxItem^ item = ref new ListBoxItem();
-        auto style = App::Current->Resources->Lookup("ListItemTextStyle");
+  // Populate the ListBox with the scenarios as defined in SampleConfiguration.cpp.
+  auto itemCollection = ref new Platform::Collections::Vector<Object^>();
+  int i = 1;
+  for (auto const& s : MainPage::Current->scenarios)
+  {
+    // Create a textBlock to hold the content and apply the ListItemTextStyle from Styles.xaml
+    TextBlock^ textBlock = ref new TextBlock();
+    ListBoxItem^ item = ref new ListBoxItem();
+    auto style = App::Current->Resources->Lookup("ListItemTextStyle");
 
-        textBlock->Text = (i++).ToString() + ") " + s.Title;
-        textBlock->Style = safe_cast<Windows::UI::Xaml::Style ^>(style);
+    textBlock->Text = (i++).ToString() + ") " + s.Title;
+    textBlock->Style = safe_cast<Windows::UI::Xaml::Style ^>(style);
 
-        item->Name = s.ClassName;
-        item->Content = textBlock;
-        itemCollection->Append(item);
-    }
+    item->Name = s.ClassName;
+    item->Content = textBlock;
+    itemCollection->Append(item);
+  }
 
-    // Set the newly created itemCollection as the ListBox ItemSource.
-    ScenarioControl->ItemsSource = itemCollection;
-    int startingScenarioIndex;
+  // Set the newly created itemCollection as the ListBox ItemSource.
+  ScenarioControl->ItemsSource = itemCollection;
+  int startingScenarioIndex;
 
-    if (Window::Current->Bounds.Width < 640)
-    {
-        startingScenarioIndex = -1;
-    }
-    else
-    {
-        startingScenarioIndex = 0;
-    }
+  if (Window::Current->Bounds.Width < 640)
+  {
+    startingScenarioIndex = -1;
+  }
+  else
+  {
+    startingScenarioIndex = 0;
+  }
 
-    ScenarioControl->SelectedIndex = startingScenarioIndex;
-    ScenarioControl->ScrollIntoView(ScenarioControl->SelectedItem);
+  ScenarioControl->SelectedIndex = startingScenarioIndex;
+  ScenarioControl->ScrollIntoView(ScenarioControl->SelectedItem);
 
-    // This page is always at the top of our in-app back stack.
-    // Once it is reached there is no further back so we can always disable the title bar back UI when navigated here.
-    // If you want to you can always to the Frame.CanGoBack check for all your pages and act accordingly.
-    SystemNavigationManager::GetForCurrentView()->AppViewBackButtonVisibility = AppViewBackButtonVisibility::Collapsed;
+  // This page is always at the top of our in-app back stack.
+  // Once it is reached there is no further back so we can always disable the title bar back UI when navigated here.
+  // If you want to you can always to the Frame.CanGoBack check for all your pages and act accordingly.
+  SystemNavigationManager::GetForCurrentView()->AppViewBackButtonVisibility = AppViewBackButtonVisibility::Collapsed;
 }
 
 
 void MainPage::ScenarioControl_SelectionChanged(Object^ sender, SelectionChangedEventArgs^ e)
 {
-    ListBox^ scenarioListBox = safe_cast<ListBox^>(sender); //as ListBox;
-    ListBoxItem^ item = dynamic_cast<ListBoxItem^>(scenarioListBox->SelectedItem);
-    if (item != nullptr)
+  ListBox^ scenarioListBox = safe_cast<ListBox^>(sender); //as ListBox;
+  ListBoxItem^ item = dynamic_cast<ListBoxItem^>(scenarioListBox->SelectedItem);
+  if (item != nullptr)
+  {
+    // Clear the status block when changing scenarios
+    NotifyUser("", NotifyType::StatusMessage);
+
+    // Navigate to the selected scenario.
+    TypeName scenarioType = { item->Name, TypeKind::Custom };
+    ScenarioFrame->Navigate(scenarioType, this);
+
+    if (Window::Current->Bounds.Width < 640)
     {
-        // Clear the status block when changing scenarios
-        NotifyUser("", NotifyType::StatusMessage);
-
-        // Navigate to the selected scenario.
-        TypeName scenarioType = { item->Name, TypeKind::Custom };
-        ScenarioFrame->Navigate(scenarioType, this);
-
-        if (Window::Current->Bounds.Width < 640)
-        {
-            Splitter->IsPaneOpen = false;
-        }
+      Splitter->IsPaneOpen = false;
     }
+  }
 }
 
 void MainPage::NotifyUser(String^ strMessage, NotifyType type)
 {
-    switch (type)
-    {
-    case NotifyType::StatusMessage:
-        StatusBorder->Background = ref new SolidColorBrush(Windows::UI::Colors::Green);
-        break;
-    case NotifyType::ErrorMessage:
-        StatusBorder->Background = ref new SolidColorBrush(Windows::UI::Colors::Red);
-        break;
-    default:
-        break;
-    }
-    StatusBlock->Text = strMessage;
+  switch (type)
+  {
+  case NotifyType::StatusMessage:
+    StatusBorder->Background = ref new SolidColorBrush(Windows::UI::Colors::Green);
+    break;
+  case NotifyType::ErrorMessage:
+    StatusBorder->Background = ref new SolidColorBrush(Windows::UI::Colors::Red);
+    break;
+  default:
+    break;
+  }
+  StatusBlock->Text = strMessage;
 
-    // Collapse the StatusBlock if it has no text to conserve real estate.
-    if (StatusBlock->Text != "")
-    {
-        StatusBorder->Visibility = Windows::UI::Xaml::Visibility::Visible;
-        StatusPanel->Visibility = Windows::UI::Xaml::Visibility::Visible;
-    }
-    else
-    {
-        StatusBorder->Visibility = Windows::UI::Xaml::Visibility::Collapsed;
-        StatusPanel->Visibility = Windows::UI::Xaml::Visibility::Collapsed;
-    }
+  // Collapse the StatusBlock if it has no text to conserve real estate.
+  if (StatusBlock->Text != "")
+  {
+    StatusBorder->Visibility = Windows::UI::Xaml::Visibility::Visible;
+    StatusPanel->Visibility = Windows::UI::Xaml::Visibility::Visible;
+  }
+  else
+  {
+    StatusBorder->Visibility = Windows::UI::Xaml::Visibility::Collapsed;
+    StatusPanel->Visibility = Windows::UI::Xaml::Visibility::Collapsed;
+  }
 }
 
 void MainPage::Footer_Click(Object^ sender, RoutedEventArgs^ e)
 {
-    auto uri = ref new Uri((String^)((HyperlinkButton^)sender)->Tag);
-    Windows::System::Launcher::LaunchUriAsync(uri);
+  auto uri = ref new Uri((String^)((HyperlinkButton^)sender)->Tag);
+  Windows::System::Launcher::LaunchUriAsync(uri);
 }
 
 void MainPage::Button_Click(Object^ sender, RoutedEventArgs^ e)
 {
-    Splitter->IsPaneOpen = !Splitter->IsPaneOpen;
+  Splitter->IsPaneOpen = !Splitter->IsPaneOpen;
 }
