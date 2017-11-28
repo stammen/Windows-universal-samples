@@ -85,7 +85,7 @@ void DX::DeviceResources::InitializeUsingHolographicSpace()
     if ((id.HighPart != 0) || (id.LowPart != 0))
     {
         UINT createFlags = 0;
-#ifdef DEBUG
+#if defined(_DEBUG)
         if (DX::SdkLayersAvailable())
         {
             createFlags |= DXGI_CREATE_FACTORY_DEBUG;
