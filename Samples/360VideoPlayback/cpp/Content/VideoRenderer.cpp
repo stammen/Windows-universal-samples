@@ -109,6 +109,14 @@ void VideoRenderer::Render()
             0
         );
     }
+    else
+    {
+        context->GSSetShader(
+            nullptr,
+            nullptr,
+            0
+        );
+    }
 
     // Attach the pixel shader.
     context->PSSetShader(
@@ -140,7 +148,6 @@ void VideoRenderer::Render()
 void VideoRenderer::CreateDeviceDependentResources()
 {
     m_usingVprtShaders = m_deviceResources->GetDeviceSupportsVprt();
-
     // Create the Texture, ShaderResource and Sampler state
 
     DX::ThrowIfFailed(
