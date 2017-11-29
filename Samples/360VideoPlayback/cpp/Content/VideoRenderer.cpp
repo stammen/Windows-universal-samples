@@ -109,7 +109,7 @@ void VideoRenderer::Render()
             0
         );
     }
-    else
+    else // turn off the geometry shader in case some other renderer left it on
     {
         context->GSSetShader(
             nullptr,
