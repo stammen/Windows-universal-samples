@@ -3,6 +3,7 @@
 #include "Common\DirectXHelper.h"
 #include "Windows.Graphics.DirectX.Direct3D11.interop.h"
 #include "AppView.h"
+#include <algorithm>
 
 using namespace _360VideoPlayback;
 using namespace concurrency;
@@ -45,7 +46,6 @@ void VideoRenderer::Update(const DX::StepTimer& timer)
 // target array index.
 void VideoRenderer::Render()
 {
-    critical_section::scoped_lock lock(m_critical);
     // Loading is asynchronous. Resources must be created before drawing can occur.
     if (!m_loadingComplete)
     {
@@ -125,8 +125,10 @@ void VideoRenderer::Render()
         0
     );
 
+    UpdateCurrentVideoFrame();
+
     // Set the Texture Shader resource and samplers
-    context->PSSetShaderResources(0, 1, m_textureView.GetAddressOf());
+    context->PSSetShaderResources(0, 1, m_texture2->GetShaderResourceView().GetAddressOf());
     context->PSSetSamplers(
         0,
         1,
@@ -150,32 +152,14 @@ void VideoRenderer::CreateDeviceDependentResources()
     m_usingVprtShaders = m_deviceResources->GetDeviceSupportsVprt();
     // Create the Texture, ShaderResource and Sampler state
 
-    DX::ThrowIfFailed(
-        m_deviceResources->GetD3DDevice()->CreateTexture2D(
-            &CD3D11_TEXTURE2D_DESC(
-                DXGI_FORMAT_R8G8B8A8_UNORM,
-                AppView::GetMediaPlayer()->PlaybackSession->NaturalVideoWidth,        // Width
-                AppView::GetMediaPlayer()->PlaybackSession->NaturalVideoHeight,        // Height
-                1,          // MipLevels
-                1,          // ArraySize
-                D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET
-            ),
-            nullptr,
-            &m_texture
-        )
-    );
+    m_texture1 = ref new VideoTexture;
+    m_texture1->CreateDeviceDependentResources(AppView::GetMediaPlayer()->PlaybackSession->NaturalVideoWidth, AppView::GetMediaPlayer()->PlaybackSession->NaturalVideoHeight);
 
-    DX::ThrowIfFailed(
-        m_deviceResources->GetD3DDevice()->CreateShaderResourceView(
-            m_texture.Get(), nullptr,
-            &m_textureView
-        )
-    );
-
+    m_texture2 = ref new VideoTexture;
+    m_texture2->CreateDeviceDependentResources(AppView::GetMediaPlayer()->PlaybackSession->NaturalVideoWidth, AppView::GetMediaPlayer()->PlaybackSession->NaturalVideoHeight);
 
     D3D11_SAMPLER_DESC desc;
     ZeroMemory(&desc, sizeof(D3D11_SAMPLER_DESC));
-
 
     desc.Filter = D3D11_FILTER_ANISOTROPIC;
     desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -198,8 +182,12 @@ void VideoRenderer::CreateDeviceDependentResources()
         )
     );
 
-    CreateD3D11Surface();
     LoadShaders();
+    m_videoFrameAvailToken =
+        AppView::GetMediaPlayer()->VideoFrameAvailable +=
+        ref new TypedEventHandler<MediaPlayer^, Platform::Object^>(
+            std::bind(&VideoRenderer::OnVideoFrameAvailable, this));
+    AppView::GetMediaPlayer()->Play();
 }
 
 void VideoRenderer::LoadShaders()
@@ -308,6 +296,9 @@ void VideoRenderer::ReleaseDeviceDependentResources()
     m_modelConstantBuffer.Reset();
     m_vertexBuffer.Reset();
     m_indexBuffer.Reset();
+    m_texture1->ReleaseDeviceDependentResources();
+    m_texture2->ReleaseDeviceDependentResources();
+
     if (m_videoFrameAvailToken.Value)
     {
         if (AppView::GetMediaPlayer() != nullptr)
@@ -428,21 +419,20 @@ void VideoRenderer::ComputeSphere(unsigned short tessellation, bool invertn)
     );
 }
 
-void VideoRenderer::CreateD3D11Surface()
-{
-    Microsoft::WRL::ComPtr<IDXGISurface> spDXGIInterfaceAccess;
-    DX::ThrowIfFailed(m_texture->QueryInterface(IID_PPV_ARGS(&spDXGIInterfaceAccess)));
-    m_surface = CreateDirect3DSurface(spDXGIInterfaceAccess.Get());
-    m_videoFrameAvailToken =
-        AppView::GetMediaPlayer()->VideoFrameAvailable +=
-        ref new TypedEventHandler<MediaPlayer^, Platform::Object^>(
-            std::bind(&VideoRenderer::OnVideoFrameAvailable, this));
-    AppView::GetMediaPlayer()->Play();
-}
-
 void VideoRenderer::OnVideoFrameAvailable()
 {
     critical_section::scoped_lock lock(m_critical);
-    AppView::GetMediaPlayer()->CopyFrameToVideoSurface(m_surface);
+    AppView::GetMediaPlayer()->CopyFrameToVideoSurface(m_texture1->GetSurface());
+    m_frameAvailable = true;
+}
+
+void VideoRenderer::UpdateCurrentVideoFrame()
+{
+    critical_section::scoped_lock lock(m_critical);
+    if (m_frameAvailable)
+    {
+        std::swap(m_texture1, m_texture2);
+        m_frameAvailable = false;
+    }
 }
 

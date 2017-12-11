@@ -158,6 +158,7 @@
     <ClInclude Include="Common\SeekBarElement.h" />
     <ClInclude Include="Content\MediaTransportControls.h" />
     <ClInclude Include="Content\VideoRenderer.h" />
+    <ClInclude Include="Content\VideoTexture.h" />
     <ClInclude Include="MainPage.xaml.h">
       <DependentUpon>..\shared\MainPage.xaml</DependentUpon>
     </ClInclude>
@@ -189,6 +190,7 @@
     <ClCompile Include="Common\SeekBarElement.cpp" />
     <ClCompile Include="Content\MediaTransportControls.cpp" />
     <ClCompile Include="Content\VideoRenderer.cpp" />
+    <ClCompile Include="Content\VideoTexture.cpp" />
     <ClCompile Include="MainPage.xaml.cpp">
       <DependentUpon>..\shared\MainPage.xaml</DependentUpon>
     </ClCompile>

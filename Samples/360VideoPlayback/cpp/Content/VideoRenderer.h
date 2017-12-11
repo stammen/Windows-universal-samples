@@ -2,6 +2,7 @@
 
 #include "..\Common\DeviceResources.h"
 #include "..\Common\StepTimer.h"
+#include "VideoTexture.h"
 #include "ShaderStructures.h"
 #include <concrt.h>
 
@@ -18,8 +19,10 @@ namespace _360VideoPlayback
         void Render();
         void ComputeSphere(unsigned short tessellation, bool invertn);
         void LoadShaders();
-        void CreateD3D11Surface();
     private:
+
+        void UpdateCurrentVideoFrame();
+
         // Cached pointer to device resources.
         std::shared_ptr<DX::DeviceResources>            m_deviceResources;
 
@@ -44,12 +47,12 @@ namespace _360VideoPlayback
 // shader just to set the render target array index.
         bool                                            m_usingVprtShaders = false;
 
-        Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_texture;
-        Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface^ m_surface;
-        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_textureView;
+        VideoTexture^                                   m_texture1;
+        VideoTexture^                                   m_texture2;
         Microsoft::WRL::ComPtr<ID3D11SamplerState>       m_quadTextureSamplerState;
         void OnVideoFrameAvailable();
         Windows::Foundation::EventRegistrationToken      m_videoFrameAvailToken;
         Concurrency::critical_section m_critical;
+        bool m_frameAvailable;
     };
 }
