@@ -20,6 +20,12 @@ using namespace Windows::UI::Input::Spatial;
 
 // Loads vertex and pixel shaders from files and instantiates the cube geometry.
 VideoTexture::VideoTexture()
+    : m_mediaDevice(nullptr)
+    , m_uiDeviceResetToken(0)
+    , m_texture(nullptr)
+    , m_sharedTexture(nullptr)
+    , m_textureView(nullptr)
+    , m_surface(nullptr)
 
 {
     m_deviceResources = _360VideoPlaybackMain::GetDeviceResources();

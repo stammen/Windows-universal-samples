@@ -15,13 +15,13 @@ namespace _360VideoPlayback
         void ReleaseDeviceDependentResources();
 
     internal:
-        Microsoft::WRL::ComPtr<ID3D11Texture2D>         GetTexture() { return m_texture; };
-        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>        GetShaderResourceView () { return m_textureView; };
-        Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface^       GetSurface();
+        Microsoft::WRL::ComPtr<ID3D11Texture2D> GetTexture() { return m_texture; };
+        Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> GetShaderResourceView () { return m_textureView; };
+        Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface^ GetSurface();
 
     private:
-        HRESULT VideoTexture::CreateMediaDevice(IDXGIAdapter* pDXGIAdapter, ID3D11Device** ppDevice);
-        HRESULT VideoTexture::InitializeDevices();
+        HRESULT CreateMediaDevice(IDXGIAdapter* pDXGIAdapter, ID3D11Device** ppDevice);
+        HRESULT InitializeDevices();
 
         // Cached pointer to device resources.
         std::shared_ptr<DX::DeviceResources>            m_deviceResources;
