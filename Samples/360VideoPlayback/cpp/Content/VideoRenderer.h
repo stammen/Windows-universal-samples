@@ -5,7 +5,6 @@
 #include "VideoTexture.h"
 #include "ShaderStructures.h"
 #include <concrt.h>
-#include <mutex>
 
 namespace _360VideoPlayback
 {
@@ -21,8 +20,6 @@ namespace _360VideoPlayback
         void ComputeSphere(unsigned short tessellation, bool invertn);
         void LoadShaders();
     private:
-
-        void UpdateCurrentVideoFrame();
 
         // Cached pointer to device resources.
         std::shared_ptr<DX::DeviceResources>            m_deviceResources;
@@ -52,7 +49,5 @@ namespace _360VideoPlayback
         Microsoft::WRL::ComPtr<ID3D11SamplerState>       m_quadTextureSamplerState;
         void OnVideoFrameAvailable();
         Windows::Foundation::EventRegistrationToken      m_videoFrameAvailToken;
-        std::mutex m_mutex;
-        bool m_frameAvailable;
     };
 }

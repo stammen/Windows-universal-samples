@@ -75,7 +75,8 @@ const VideoItemInfo sampleVideos[] = {
     {
         L"Sample Video",
         //L"https://mediaplatstorage1.blob.core.windows.net/windows-universal-samples-media/SampleVideo.mp4",
-        L"ms-appdata:///local/SampleVideo.mp4",
+        //L"ms-appdata:///local/SampleVideo.mp4",
+        L"ms-appdata:///local/who.mp4",
     }
 };
 

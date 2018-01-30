@@ -21,7 +21,7 @@ namespace _360VideoPlayback
 
     private:
         HRESULT CreateMediaDevice(IDXGIAdapter* pDXGIAdapter, ID3D11Device** ppDevice);
-        HRESULT InitializeDevices();
+        HRESULT InitializeMediaDevice();
 
         // Cached pointer to device resources.
         std::shared_ptr<DX::DeviceResources>            m_deviceResources;

@@ -29,14 +29,15 @@ VideoTexture::VideoTexture()
 
 {
     m_deviceResources = _360VideoPlaybackMain::GetDeviceResources();
-
 }
 
 
 void VideoTexture::CreateDeviceDependentResources(UINT width, UINT height)
 {
-    // Create the Texture, ShaderResource and Sampler state
+    //Initialize the DirectX device for the MediaPlayer
+    DX::ThrowIfFailed(InitializeMediaDevice());
 
+    // Create the Texture and ShaderResource
     D3D11_TEXTURE2D_DESC texDesc = { 0 };
     texDesc.Width = width;
     texDesc.Height = height;
@@ -51,45 +52,33 @@ void VideoTexture::CreateDeviceDependentResources(UINT width, UINT height)
     texDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
 
     DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateTexture2D(&texDesc,nullptr, &m_texture));
+    DX::ThrowIfFailed(m_deviceResources->GetD3DDevice()->CreateShaderResourceView(m_texture.Get(), nullptr, &m_textureView));
 
-    DX::ThrowIfFailed(
-        m_deviceResources->GetD3DDevice()->CreateShaderResourceView(
-            m_texture.Get(), nullptr,
-            &m_textureView
-        )
-    );
+    // create a shared texture handle to the texture
+    ComPtr<IDXGIResource> dxgiResource;
+    HANDLE sharedHandle;
+    DX::ThrowIfFailed(m_texture.As(&dxgiResource));
+    DX::ThrowIfFailed(dxgiResource->GetSharedHandle(&sharedHandle));
 
-    InitializeDevices();
+    // open the shared texture on the directx device assigned to the Media Player
+    DX::ThrowIfFailed(m_mediaDevice->OpenSharedResource(sharedHandle, __uuidof(ID3D11Texture2D), (LPVOID*)m_sharedTexture.GetAddressOf()));
+    Microsoft::WRL::ComPtr<IDXGISurface> spDXGIInterfaceAccess;
+    DX::ThrowIfFailed(m_sharedTexture->QueryInterface(IID_PPV_ARGS(&spDXGIInterfaceAccess)));
+    m_surface = CreateDirect3DSurface(spDXGIInterfaceAccess.Get());
 }
 
 Windows::Graphics::DirectX::Direct3D11::IDirect3DSurface^ VideoTexture::GetSurface()
 {
-    if (m_surface == nullptr)
-    {
-        ComPtr<IDXGIResource> dxgiResource;
-        HANDLE sharedHandle;
-        DX::ThrowIfFailed(m_texture.As(&dxgiResource));
-        DX::ThrowIfFailed(dxgiResource->GetSharedHandle(&sharedHandle));
-        DX::ThrowIfFailed(m_mediaDevice->OpenSharedResource(sharedHandle, __uuidof(ID3D11Texture2D), (LPVOID*)m_sharedTexture.GetAddressOf()));
-
-        Microsoft::WRL::ComPtr<IDXGISurface> spDXGIInterfaceAccess;
-        DX::ThrowIfFailed(m_sharedTexture->QueryInterface(IID_PPV_ARGS(&spDXGIInterfaceAccess)));
-        m_surface = CreateDirect3DSurface(spDXGIInterfaceAccess.Get());
-    }
     return m_surface;
 }
-
-
 
 void VideoTexture::ReleaseDeviceDependentResources()
 {
     MFUnlockDXGIDeviceManager();
-
     m_sharedTexture.Reset();
     m_texture.Reset();
     m_textureView.Reset();
     m_surface = nullptr;
-
     m_mediaDevice.Reset();
     m_mediaDevice = nullptr;
 }
@@ -181,7 +170,7 @@ HRESULT VideoTexture::CreateMediaDevice(
     return S_OK;
 }
 
-HRESULT VideoTexture::InitializeDevices()
+HRESULT VideoTexture::InitializeMediaDevice()
 {
     m_mediaDevice = nullptr;
 

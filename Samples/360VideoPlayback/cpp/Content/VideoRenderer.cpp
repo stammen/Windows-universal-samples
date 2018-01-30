@@ -125,8 +125,6 @@ void VideoRenderer::Render()
         0
     );
 
-    //UpdateCurrentVideoFrame();
-
     // Set the Texture Shader resource and samplers
     context->PSSetShaderResources(0, 1, m_texture1->GetShaderResourceView().GetAddressOf());
     context->PSSetSamplers(
@@ -347,8 +345,11 @@ void VideoRenderer::ComputeSphere(unsigned short tessellation, bool invertn)
             VertexPositionTexture vert;
             vert.position = normalFloat3;
 
+#if 0
             vert.textureCoordinate = XMFLOAT2(1.0f - u, v);
-
+#else
+            vert.textureCoordinate = XMFLOAT2(u, v / 2);
+#endif
             sphereVertices.push_back(vert);
         }
     }
@@ -418,25 +419,7 @@ void VideoRenderer::ComputeSphere(unsigned short tessellation, bool invertn)
 
 void VideoRenderer::OnVideoFrameAvailable()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
     AppView::GetMediaPlayer()->CopyFrameToVideoSurface(m_texture1->GetSurface());
-    m_frameAvailable = true;
 }
 
-void VideoRenderer::UpdateCurrentVideoFrame()
-{
-    // if mutex is locked, next frame is still being decoded
-    if (m_mutex.try_lock())
-    {
-        if (m_frameAvailable)
-        {
-            m_frameAvailable = false;
-        }
-        m_mutex.unlock();
-    }
-    else
-    {
-        OutputDebugString(L"VideoRenderer::UpdateCurrentVideoFrame: next frame is still being decoded\n");
-    }
-}
 
