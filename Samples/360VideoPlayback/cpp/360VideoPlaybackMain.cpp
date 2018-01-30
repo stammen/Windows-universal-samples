@@ -425,6 +425,7 @@ void _360VideoPlaybackMain::OnLocatabilityChanged(SpatialLocator^ sender, Object
     case SpatialLocatability::PositionalTrackingInhibited:
         // Positional tracking is temporarily inhibited. User action may be required
         // in order to restore positional tracking.
+        OutputDebugStringW(L"SpatialLocatability::PositionalTrackingInhibited\n");
         break;
 
     case SpatialLocatability::PositionalTrackingActive:

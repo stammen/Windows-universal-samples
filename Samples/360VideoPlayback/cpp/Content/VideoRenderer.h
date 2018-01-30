@@ -49,7 +49,6 @@ namespace _360VideoPlayback
         bool                                            m_usingVprtShaders = false;
 
         VideoTexture^                                   m_texture1;
-        VideoTexture^                                   m_texture2;
         Microsoft::WRL::ComPtr<ID3D11SamplerState>       m_quadTextureSamplerState;
         void OnVideoFrameAvailable();
         Windows::Foundation::EventRegistrationToken      m_videoFrameAvailToken;

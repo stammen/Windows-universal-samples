@@ -125,10 +125,10 @@ void VideoRenderer::Render()
         0
     );
 
-    UpdateCurrentVideoFrame();
+    //UpdateCurrentVideoFrame();
 
     // Set the Texture Shader resource and samplers
-    context->PSSetShaderResources(0, 1, m_texture2->GetShaderResourceView().GetAddressOf());
+    context->PSSetShaderResources(0, 1, m_texture1->GetShaderResourceView().GetAddressOf());
     context->PSSetSamplers(
         0,
         1,
@@ -155,9 +155,7 @@ void VideoRenderer::CreateDeviceDependentResources()
     m_texture1 = ref new VideoTexture;
     m_texture1->CreateDeviceDependentResources(AppView::GetMediaPlayer()->PlaybackSession->NaturalVideoWidth, AppView::GetMediaPlayer()->PlaybackSession->NaturalVideoHeight);
 
-    m_texture2 = ref new VideoTexture;
-    m_texture2->CreateDeviceDependentResources(AppView::GetMediaPlayer()->PlaybackSession->NaturalVideoWidth, AppView::GetMediaPlayer()->PlaybackSession->NaturalVideoHeight);
-
+ 
     D3D11_SAMPLER_DESC desc;
     ZeroMemory(&desc, sizeof(D3D11_SAMPLER_DESC));
 
@@ -297,7 +295,6 @@ void VideoRenderer::ReleaseDeviceDependentResources()
     m_vertexBuffer.Reset();
     m_indexBuffer.Reset();
     m_texture1->ReleaseDeviceDependentResources();
-    m_texture2->ReleaseDeviceDependentResources();
 
     if (m_videoFrameAvailToken.Value)
     {
@@ -433,7 +430,6 @@ void VideoRenderer::UpdateCurrentVideoFrame()
     {
         if (m_frameAvailable)
         {
-            std::swap(m_texture1, m_texture2);
             m_frameAvailable = false;
         }
         m_mutex.unlock();
