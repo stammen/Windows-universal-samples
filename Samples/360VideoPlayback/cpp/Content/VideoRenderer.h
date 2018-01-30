@@ -5,6 +5,7 @@
 #include "VideoTexture.h"
 #include "ShaderStructures.h"
 #include <concrt.h>
+#include <mutex>
 
 namespace _360VideoPlayback
 {
@@ -52,7 +53,7 @@ namespace _360VideoPlayback
         Microsoft::WRL::ComPtr<ID3D11SamplerState>       m_quadTextureSamplerState;
         void OnVideoFrameAvailable();
         Windows::Foundation::EventRegistrationToken      m_videoFrameAvailToken;
-        Concurrency::critical_section m_critical;
+        std::mutex m_mutex;
         bool m_frameAvailable;
     };
 }

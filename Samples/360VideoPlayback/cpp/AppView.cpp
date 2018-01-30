@@ -113,6 +113,7 @@ void AppView::SetWindow(CoreWindow^ window)
 
     m_mediaPlayer->IsVideoFrameServerEnabled = true;
     m_mediaPlayer->IsLoopingEnabled = true;
+
 }
 
 // The Load method can be used to initialize scene resources or to load a

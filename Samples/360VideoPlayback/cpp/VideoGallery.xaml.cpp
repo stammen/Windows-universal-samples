@@ -15,6 +15,7 @@ using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::Graphics::Holographic;
+using namespace Windows::Storage;
 using namespace Windows::Perception::Spatial::Surfaces;
 using namespace Windows::UI::Core;
 using namespace Windows::UI::ViewManagement;
@@ -73,12 +74,16 @@ const VideoItemInfo sampleVideos[] = {
     // You can add more sample videos here.
     {
         L"Sample Video",
-        L"https://mediaplatstorage1.blob.core.windows.net/windows-universal-samples-media/SampleVideo.mp4",
+        //L"https://mediaplatstorage1.blob.core.windows.net/windows-universal-samples-media/SampleVideo.mp4",
+        L"ms-appdata:///local/who.mp4",
     }
 };
 
 void _360VideoPlayback::VideoGallery::OnLoaded(Object^ sender, RoutedEventArgs^ e)
 {
+    StorageFolder^ localFolder = ApplicationData::Current->LocalFolder;
+    Platform::String^ localPath = localFolder->Path;
+
     auto videoItemList = ref new Vector<Object^>();
     for (auto const& info : sampleVideos)
     {

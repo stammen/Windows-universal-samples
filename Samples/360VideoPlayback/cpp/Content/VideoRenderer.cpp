@@ -421,18 +421,26 @@ void VideoRenderer::ComputeSphere(unsigned short tessellation, bool invertn)
 
 void VideoRenderer::OnVideoFrameAvailable()
 {
-    critical_section::scoped_lock lock(m_critical);
+    std::lock_guard<std::mutex> lock(m_mutex);
     AppView::GetMediaPlayer()->CopyFrameToVideoSurface(m_texture1->GetSurface());
     m_frameAvailable = true;
 }
 
 void VideoRenderer::UpdateCurrentVideoFrame()
 {
-    critical_section::scoped_lock lock(m_critical);
-    if (m_frameAvailable)
+    // if mutex is locked, next frame is still being decoded
+    if (m_mutex.try_lock())
     {
-        std::swap(m_texture1, m_texture2);
-        m_frameAvailable = false;
+        if (m_frameAvailable)
+        {
+            std::swap(m_texture1, m_texture2);
+            m_frameAvailable = false;
+        }
+        m_mutex.unlock();
+    }
+    else
+    {
+        OutputDebugString(L"VideoRenderer::UpdateCurrentVideoFrame: next frame is still being decoded\n");
     }
 }
 
