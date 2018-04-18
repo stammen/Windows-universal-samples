@@ -96,13 +96,13 @@ namespace SDKTemplate
 
             try
             {
-                const uint streamLength = 100000;
+                const uint streamLength = 1000000;
                 HttpStreamContent streamContent = new HttpStreamContent(new SlowInputStream(streamLength));
 
                 // If stream length is unknown, the request is chunked transfer encoded.
                 if (!ChunkedRequestToggle.IsOn)
                 {
-                    streamContent.Headers.ContentLength = streamLength;
+                    //streamContent.Headers.ContentLength = streamLength;
                 }
 
                 IProgress<HttpProgress> progress = new Progress<HttpProgress>(ProgressHandler);

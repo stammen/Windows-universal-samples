@@ -77,9 +77,9 @@ namespace SDKTemplate
 
             try
             {
-                IHttpContent jsonContent = new HttpJsonContent(JsonValue.Parse("{\"score\": 100, \"enabled\": false}"));
+                IHttpContent audioContent = new HttpAudioContent();
 
-                HttpResponseMessage response = await httpClient.PostAsync(resourceAddress, jsonContent).AsTask(cts.Token);
+                HttpResponseMessage response = await httpClient.PostAsync(resourceAddress, audioContent).AsTask(cts.Token);
 
                 await Helpers.DisplayTextResultAsync(response, OutputField, cts.Token);
 

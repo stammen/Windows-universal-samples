@@ -103,6 +103,7 @@
       <Link>Properties\AssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Helpers.cs" />
+    <Compile Include="HttpAudioContent.cs" />
     <Compile Include="HttpJsonContent.cs" />
     <Compile Include="PlugInFilter.cs" />
     <Compile Include="SampleConfiguration.cs" />

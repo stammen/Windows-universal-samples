@@ -11,6 +11,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -23,36 +24,47 @@ namespace SDKTemplate
 {
     class SlowInputStream : IInputStream
     {
-        uint length;
-        uint position;
+        bool m_endOfAudio;
+        uint m_audioBytesAvailable;
 
         public SlowInputStream(uint length)
         {
-            this.length = length;
-            position = 0;
+            m_endOfAudio = false;
+            m_audioBytesAvailable = length;
         }
+        
+        // add code to add audio to buffer
+        // add code to signal end of audio stream
 
         public IAsyncOperationWithProgress<IBuffer, uint> ReadAsync(IBuffer buffer, uint count, InputStreamOptions options)
         {
             return AsyncInfo.Run<IBuffer, uint>(async (cancellationToken, progress) =>
             {
-                if (length - position < count)
+                // Wait for enough audio or end of audio
+                while ((m_audioBytesAvailable < count) && !m_endOfAudio)
                 {
-                    count = length - position;
+                    await Task.Delay(100);
+                    // simulate adding audio
+                    m_audioBytesAvailable = count;
+                    m_endOfAudio = true;
                 }
 
-                byte[] data = new byte[count];
-                for (uint i = 0; i < count; i++)
+                var byteCount = m_endOfAudio ? m_audioBytesAvailable : count;
+                if(byteCount > count)
+                {
+                    byteCount = count;
+                }
+
+                m_audioBytesAvailable -= byteCount;
+
+                byte[] data = new byte[byteCount];
+                for (uint i = 0; i < byteCount; i++)
                 {
                     data[i] = 64;
                 }
 
-                // Introduce a 1 second delay.
-                await Task.Delay(1000);
-
-                position += count;
-                progress.Report(count);
-
+                progress.Report(byteCount);
+                Debug.WriteLine(byteCount);
                 return data.AsBuffer();
             });
         }
