@@ -124,24 +124,35 @@ namespace SDKTemplate
         public bool TryComputeLength(out ulong length)
         {
             length = GetLength();
-            return true;
+            return false;
         }
 
         public IAsyncOperationWithProgress<ulong, ulong> WriteToStreamAsync(IOutputStream outputStream)
         {
             return AsyncInfo.Run<ulong, ulong>(async (cancellationToken, progress) =>
             {
+                uint totalBytes = 0;
                 DataWriter writer = new DataWriter(outputStream);
-                writer.WriteString(jsonValue.Stringify());
-                uint bytesWritten = await writer.StoreAsync().AsTask(cancellationToken);
+                while (totalBytes < 128000)
+                {
+                    uint count = 16000;
+                    for (uint i = 0; i < count; i++)
+                    {
+                        writer.WriteByte(64);
+                    }
+
+                    uint bytesWritten = await writer.StoreAsync().AsTask(cancellationToken);
+
+                    await Task.Delay(500);
+
+                    // Report progress.
+                    progress.Report(bytesWritten);
+                    totalBytes += bytesWritten;
+                }
 
                 // Make sure that DataWriter destructor does not close the stream.
                 writer.DetachStream();
-
-                // Report progress.
-                progress.Report(bytesWritten);
-
-                return bytesWritten;
+                return totalBytes;
             });
         }
 

@@ -13,6 +13,7 @@ using System;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Data.Json;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Navigation;
@@ -96,9 +97,10 @@ namespace SDKTemplate
 
             try
             {
-                const uint streamLength = 1000000;
-                HttpStreamContent streamContent = new HttpStreamContent(new SlowInputStream(streamLength));
-
+                const uint streamLength = 128000;
+                //HttpStreamContent streamContent = new HttpStreamContent(new SlowInputStream(streamLength));
+                //HttpJsonContent streamContent = new HttpJsonContent(JsonValue.Parse("{\"score\": 100, \"enabled\": false}"));
+                HttpAudioContent streamContent = new HttpAudioContent(streamLength);
                 // If stream length is unknown, the request is chunked transfer encoded.
                 if (!ChunkedRequestToggle.IsOn)
                 {
